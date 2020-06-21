@@ -1,5 +1,7 @@
 # raspberrypi_exporter
-Prometheus exporter for Raspberry Pi metrics
+Prometheus exporter for Raspberry Pi metrics compatible with Ubuntu 20.04's default packages.
+
+Requires prometheus-node-exporter and prometheus-node-exporter-collectors.
 
 ## Prerequisites
 
@@ -10,9 +12,13 @@ Prometheus exporter for Raspberry Pi metrics
 
 ## Usage
 
+Install unzip:
+
+    $ sudo apt install unzip
+
 Installation
 
-    $ curl -fsSL "https://raw.githubusercontent.com/fahlke/raspberrypi_exporter/master/installer.sh" | sudo bash
+    $ curl -fsSL "https://raw.githubusercontent.com/mpkossen/raspberrypi_exporter/master/installer.sh" | sudo bash
 
 Check if the service is running
 
