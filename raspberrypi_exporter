@@ -2,8 +2,8 @@
 
 set -eu
 
-VCGEN="$(command -v vcgencmd)"
-METRICS_FILE="/var/lib/node_exporter/textfile_collector/raspberrypi-metrics.prom"
+# VCGEN="$(command -v vcgencmd)"
+METRICS_FILE="/var/lib/prometheus/node-exporter/raspberrypi-metrics.prom"
 TMP_FILE="${METRICS_FILE}.tmp"
 PREFIX="rpi_"
 
@@ -27,51 +27,52 @@ for SENSOR in $(ls /sys/class/thermal/); do
   echo "${PREFIX}temperature{sensor=\"${SENSOR}\",type=\"${CPU_TYPE}\"} ${CPU_TEMP_CELSIUS}" >> "${TMP_FILE}"
 done
 
+# Disabled until I find a solution for this
 # get component frequencies
-{
-  echo "# HELP ${PREFIX}frequency Clock frequencies of the components in hertz.";
-  echo "# TYPE ${PREFIX}frequency gauge";
-} >> "${TMP_FILE}"
-declare -a FREQ_COMPONENTS=("arm" "core" "h264" "isp" "v3d" "uart" "pwm" "emmc" "pixel" "hdmi")
-for FREQ_COMPONENT in "${FREQ_COMPONENTS[@]}"; do
-  unset FREQUENCE
+# {
+#   echo "# HELP ${PREFIX}frequency Clock frequencies of the components in hertz.";
+#   echo "# TYPE ${PREFIX}frequency gauge";
+# } >> "${TMP_FILE}"
+# declare -a FREQ_COMPONENTS=("arm" "core" "h264" "isp" "v3d" "uart" "pwm" "emmc" "pixel" "hdmi")
+# for FREQ_COMPONENT in "${FREQ_COMPONENTS[@]}"; do
+#   unset FREQUENCE
 
-  FREQUENCE="$($VCGEN measure_clock "${FREQ_COMPONENT}" | cut -d '=' -f 2)" || true
-  FREQUENCE="${FREQUENCE:=0}"
+#   FREQUENCE="$($VCGEN measure_clock "${FREQ_COMPONENT}" | cut -d '=' -f 2)" || true
+#   FREQUENCE="${FREQUENCE:=0}"
 
-  echo "${PREFIX}frequency{component=\"${FREQ_COMPONENT}\"} ${FREQUENCE}" >> "${TMP_FILE}"
-done
+#   echo "${PREFIX}frequency{component=\"${FREQ_COMPONENT}\"} ${FREQUENCE}" >> "${TMP_FILE}"
+# done
 
-# get component voltages
-{
-  echo "# HELP ${PREFIX}voltage Voltages of the components in volts.";
-  echo "# TYPE ${PREFIX}voltage gauge";
-} >> "${TMP_FILE}"
-declare -a VOLT_COMPONENTS=("core" "sdram_c" "sdram_i" "sdram_p")
-for VOLT_COMPONENT in "${VOLT_COMPONENTS[@]}"; do
-  unset VOLTS
+# # get component voltages
+# {
+#   echo "# HELP ${PREFIX}voltage Voltages of the components in volts.";
+#   echo "# TYPE ${PREFIX}voltage gauge";
+# } >> "${TMP_FILE}"
+# declare -a VOLT_COMPONENTS=("core" "sdram_c" "sdram_i" "sdram_p")
+# for VOLT_COMPONENT in "${VOLT_COMPONENTS[@]}"; do
+#   unset VOLTS
 
-  VOLTS="$($VCGEN measure_volts "${VOLT_COMPONENT}" | cut -d '=' -f 2 | sed 's/V$//')" || true
-  VOLTS="${VOLTS:=0}"
+#   VOLTS="$($VCGEN measure_volts "${VOLT_COMPONENT}" | cut -d '=' -f 2 | sed 's/V$//')" || true
+#   VOLTS="${VOLTS:=0}"
 
-  echo "${PREFIX}voltage{component=\"${VOLT_COMPONENT}\"} ${VOLTS}" >> "${TMP_FILE}"
-done
+#   echo "${PREFIX}voltage{component=\"${VOLT_COMPONENT}\"} ${VOLTS}" >> "${TMP_FILE}"
+# done
 
-# get memory split of CPU vs GPU
-{
-  echo "# HELP ${PREFIX}memory Memory split of CPU and GPU in bytes.";
-  echo "# TYPE ${PREFIX}memory gauge";
-} >> "${TMP_FILE}"
-declare -a MEM_COMPONENTS=("arm" "gpu")
-for MEM_COMPONENT in "${MEM_COMPONENTS[@]}"; do
-  unset MEM
+# # get memory split of CPU vs GPU
+# {
+#   echo "# HELP ${PREFIX}memory Memory split of CPU and GPU in bytes.";
+#   echo "# TYPE ${PREFIX}memory gauge";
+# } >> "${TMP_FILE}"
+# declare -a MEM_COMPONENTS=("arm" "gpu")
+# for MEM_COMPONENT in "${MEM_COMPONENTS[@]}"; do
+#   unset MEM
 
-  MEM="$($VCGEN get_mem "${MEM_COMPONENT}" | cut -d '=' -f 2 | sed 's/M$//')" || true
-  MEM="${MEM:=0}"
-  MEM="$(( MEM * 1024 * 1024 ))"
+#   MEM="$($VCGEN get_mem "${MEM_COMPONENT}" | cut -d '=' -f 2 | sed 's/M$//')" || true
+#   MEM="${MEM:=0}"
+#   MEM="$(( MEM * 1024 * 1024 ))"
 
-  echo "${PREFIX}memory{component=\"${MEM_COMPONENT}\"} ${MEM}" >> "${TMP_FILE}"
-done
+#   echo "${PREFIX}memory{component=\"${MEM_COMPONENT}\"} ${MEM}" >> "${TMP_FILE}"
+# done
 
 # write metrics file
 mv "${TMP_FILE}" "${METRICS_FILE}"
